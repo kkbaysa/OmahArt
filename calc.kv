@@ -1,0 +1,9 @@
+<CalcGridLayout>
+    BoxLayout:
+        spacing:10
+        CustomButton:
+            text: "7"
+            on_press: entry.text += self.text
+        CustomButton:
+            text: "AC"
+            on_press: entry.text = ""
