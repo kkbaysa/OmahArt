@@ -1,5 +1,3 @@
-bioStorage = {}
-
 def biography(nameIn, addressIn, cityIn, stateIn, ZIPIn, specialtyIn, emailIn, phoneNumberIn, storyIn):
     return {
         name: nameIn,
