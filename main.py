@@ -4,9 +4,10 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
+from datetime import date
 
 
-class SayHello(App):  # create app class
+class SubmissionForm(App):  # create app class
     def build(self):  # build method
         self.window = GridLayout()
         self.window.cols = 1
@@ -48,11 +49,11 @@ class SayHello(App):  # create app class
         return self.window
 
     def callback1(self, instance):
-        self.greeting.text = "Howdy " + self.user.text + "!"
+        self.greeting.text = "Submitted " + date.today().isoformat() + "!"
 
     def callback2(self, instance):
         self.greeting.text = ""
 
 
-sayHello = SayHello()
-sayHello.run()
+submissionForm = SubmissionForm()
+SubmissionForm.run()

@@ -1,3 +1,5 @@
+bioStorage = {}
+
 def biography(nameIn, addressIn, cityIn, stateIn, ZIPIn, specialtyIn, emailIn, phoneNumberIn, storyIn):
     return {
         name: nameIn,
@@ -5,6 +7,7 @@ def biography(nameIn, addressIn, cityIn, stateIn, ZIPIn, specialtyIn, emailIn, p
         city: cityIn,
         state: stateIn,
         ZIP: ZIPIn,
+        companyName: companyNameIn,
         specialty: specialtyIn,
         email: emailIn,
         phone: phoneNumberIn,
