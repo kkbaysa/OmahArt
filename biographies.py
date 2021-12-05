@@ -1,13 +1,11 @@
-def biography(nameIn, addressIn, cityIn, stateIn, ZIPIn, specialtyIn, emailIn, phoneNumberIn, storyIn):
-    return {
-        name: nameIn,
-        address: addressIn,
-        city: cityIn,
-        state: stateIn,
-        ZIP: ZIPIn,
-        companyName: companyNameIn,
-        specialty: specialtyIn,
-        email: emailIn,
-        phone: phoneNumberIn,
-        story: storyIn
-    }
+class Biography:
+    def __init__(self, firstNameIn, lastNameIn, companyNameIn, emailIn, websiteNameIn, socialMediaIn, phoneNumIn, productCategoryIn, bioIn):
+        self.firstName = firstNameIn
+        self.lastName = lastNameIn
+        self.companyName = companyNameIn
+        self.email = emailIn
+        self.websiteName = websiteNameIn
+        self.socialMedia = socialMediaIn
+        self.phoneNum = phoneNumIn
+        self.productCategory = productCategoryIn
+        self.bio = bioIn

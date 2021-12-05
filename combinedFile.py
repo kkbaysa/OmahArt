@@ -12,6 +12,8 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from functools import partial
+from biographies import Biography
+from kivy.uix.actionbar import ActionView,ActionOverflow,ActionBar,ActionButton,ActionPrevious
 import csv
 
 
@@ -201,8 +203,7 @@ class Form(Screen):  # create screen
                               size_hint=(.25, 0.25),
                               bold=True,
                               background_color='#FF0000')
-        # background_normal="")
-        self.button1.bind(on_press=self.callback1)
+        self.button1.bind(on_press=self.backtohome)
 
         ## Submit Button
         self.button2 = Button(text="Submit Form",
@@ -220,52 +221,65 @@ class Form(Screen):  # create screen
 
         self.add_widget(self.window)
 
+    def backtohome(self, instance):
+        self.manager.current = 'homescreen'
+
     def callback1(self, pop, instance):
         pop.dismiss()
         self.manager.current = 'homescreen'
 
+    def continueForm(self, pop, instance):
+        pop.dismiss()
+        self.manager.current = 'form'
+
     def callback2(self, instance):
-        pop = Popup(title='Submission Received', size_hint=(None, None), size=(1100,800))
-        self.contents = GridLayout()
-        self.contents.cols = 1
-        self.message = Label(text="Submitted. We will get back to you shortly, " + self.firstName.text + "!")
-        self.returnButton = Button(text='Return to Home Page')
-        # self.returnButton.bind(on_press=pop.close())
-        self.returnButton.bind(on_press=partial(self.callback1, pop))
-        self.contents.add_widget(self.message)
-        self.contents.add_widget(self.returnButton)
+        if (self.firstName.text != '') and self.lastName.text != '' and self.companyName.text != '' and self.companyCategory.text != '':
+            pop = Popup(title='Submission Received', size_hint=(None, None), size=(1100,800))
+            self.contents = GridLayout()
+            self.contents.cols = 1
+            self.message = Label(text="Submitted. We will get back to you shortly, " + self.firstName.text + "!")
+            self.returnButton = Button(text='Return to Home Page')
+            self.returnButton.bind(on_press=partial(self.callback1, pop))
+            self.contents.add_widget(self.message)
+            self.contents.add_widget(self.returnButton)
 
-        pop.content = self.contents
-        pop.open()
+            pop.content = self.contents
+            pop.open()
 
-        # self.manager.current = 'popup'
-        with open("companyBios.csv", "at") as csvOut:
-            entry = [self.firstName.text, self.lastName.text, self.companyName.text,
-                     self.companyEmail.text, self.companyWebsite.text, self.companySocialMedia.text,
-                     self.companyPhoneNumber.text, self.companyCategory.text, self.companyBio.text]
-            csvWriter = csv.writer(csvOut)
-            csvWriter.writerow(entry)
-            csvOut.close()
+            with open("companyBios.csv", "at") as csvOut:
+                    entry = [self.firstName.text, self.lastName.text, self.companyName.text,
+                             self.companyEmail.text, self.companyWebsite.text, self.companySocialMedia.text,
+                             self.companyPhoneNumber.text, self.companyCategory.text, self.companyBio.text]
+                    csvWriter = csv.writer(csvOut)
+                    csvWriter.writerow(entry)
+                    csvOut.close()
+        else:
+            pop = Popup(title='Invalid Submission', size_hint=(None, None), size=(1100, 800))
+            self.contents = GridLayout()
+            self.contents.cols = 1
+            self.message = Label(text="Fill out the form completely to register your company.")
+            self.returnButton = Button(text='Return to Form')
+            self.returnButton.bind(on_press=partial(self.continueForm, pop))
+            self.contents.add_widget(self.message)
+            self.contents.add_widget(self.returnButton)
 
-# class SubmitPopup(Widget):
-#     def __init__(self, **kwargs):
-#         super(SubmitPopup, self).__init__(**kwargs)
-#         self.content = GridLayout()
-#         self.content.cols = 1
-#         self.message = Label(text="Submitted. We will get back to you shortly, " + self.firstName.text + "!")
-#         self.returnButton = Button(text='Return to Home Page')
-#         self.returnButton.bind(on_press=self.callback1)
-#         self.content.add_widget(self.message)
-#         self.content.add_widget(self.returnButton)
-#         pop = Popup(title='Submission Received',
-#                     content=self.content,
-#                     size_hint=(None, None), size=(1100, 800))
-#         pop.open()
+            pop.content = self.contents
+            pop.open()
 
-##########
+'''
+    Home screen of application. This will hold all of the company business cards that users can interact with. 
+'''
 
 class HomeScreen(Screen):  # create app class
     def __init__(self, **kwargs):
+        bios = []
+
+        with open('companyBios.csv', newline='') as csvfile:
+            companyBios = csv.reader(csvfile, delimiter=',')
+            for row in companyBios:
+                bios.append(Biography(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]))
+
+
         super(HomeScreen, self).__init__(**kwargs)
         Window.clearcolor = (1, 1, 1, 1)
         Window.size = (1000, 1000)
@@ -274,6 +288,27 @@ class HomeScreen(Screen):  # create app class
         self.window.cols = 1
         self.window.size_hint = (.8, 1)
         self.window.pos_hint = {"center_x": 0.5, "center_y": .75}
+
+
+        ## Heading to the application
+        self.headingTile = BoxLayout(orientation='horizontal')
+        # self.headingTile.size_hint = (1, 1)
+        # self.headingTile = GridLayout()
+        # self.headingTile.cols = 1
+        # self.headingTile.size = (1,1)
+        self.actionBar = ActionBar(
+                        pos=(0,0),
+                        width=Window.width,
+                        height=100,
+                        background_image='',
+                        background_color='#89CFFF')
+
+        self.actionView = ActionView()
+        self.actionPrevious = ActionPrevious(title='OmahART', with_previous=False, color='#000000')
+        self.actionView.add_widget(self.actionPrevious)
+        self.actionBar.add_widget(self.actionView)
+        self.headingTile.add_widget(self.actionBar)
+        self.window.add_widget(self.headingTile)
 
         self.header = BoxLayout(orientation='horizontal')
         self.homeButton = Button(text="Home Page",
@@ -297,15 +332,22 @@ class HomeScreen(Screen):  # create app class
         self.cardScroller = ScrollView()
         self.cards = GridLayout()
         self.cards.cols = 2
-        # self.cards.size_hint = (0.6, 0.7)
 
-        for i in range(10):
-            self.card1 = Button(text="Company " + str(i),
+
+        for company in bios:
+            self.companyHeader1 = Label(text=company.companyName)
+            # # self.companyHeader1.font_size = 60
+            # self.companyHeader1.halign = 'center'
+            self.companyHeader2 = Label(text=company.productCategory)
+            # self.companyHeader2.font_size = 30
+            # self.companyHeader2.halign = 'center'
+            self.card1 = Button(text=self.companyHeader1.text + "\n" + self.companyHeader2.text,
                                 size_hint=(.5, .25),
                                 bold=True,
                                 background_color='#99FFFF')
             self.card1.size_hint = (.75, .25)
-            self.card1.bind(on_press=partial(self.callback1, i))
+            self.card1.halign='center'
+            self.card1.bind(on_press=partial(self.openBusinessCard, company))
             self.cards.add_widget(self.card1)
 
         self.cardScroller.add_widget(self.cards)
@@ -314,10 +356,37 @@ class HomeScreen(Screen):  # create app class
 
         self.add_widget(self.window)
 
-    def callback1(self, i, instance):
-        popHome = Popup(title='Company Name' + str(i),
-                    content=Label(text='Company Name Information'),
+    def openBusinessCard(self, company, instance):
+
+        self.scrollArea = ScrollView(size_hint=(1, None), size=(1100, 800))
+        self.contentArea = BoxLayout(orientation ='vertical')
+        self.spacer1 = Label(text = '', font_size = 20, size_hint=(1, .1))
+        self.spacer2 = Label(text = '', font_size = 20, size_hint=(1, .1))
+
+        self.bio = Label(text=company.bio, font_size=28, size_hint=(1, .1), text_size=(800, None), color='#000000')
+        self.category = Label(text ="Product Category: " + company.productCategory, font_size = 25, size_hint=(1, .1), color='#000000')
+        self.websiteName = Label(text="Website: " + company.websiteName, font_size=25, size_hint=(1, .1), color='#000000')
+        self.socialMedia = Label(text="Social Media: " + company.socialMedia, font_size=25, size_hint=(1, .1), color='#000000')
+        self.email = Label(text="Email: " + company.email, font_size=25, size_hint=(1, .1), color='#000000')
+
+        self.contentArea.add_widget(self.spacer1)
+        self.contentArea.add_widget(self.bio)
+        self.contentArea.add_widget(self.category)
+        self.contentArea.add_widget(self.websiteName)
+        self.contentArea.add_widget(self.socialMedia)
+        self.contentArea.add_widget(self.email)
+
+        self.scrollArea.add_widget(self.contentArea)
+
+        popHome = Popup(
+                    title=company.companyName,
+                    content=self.scrollArea,
                     size_hint=(None, None), size=(1100, 800))
+
+        popHome.title_align = 'center'
+        popHome.title_size = 35
+        popHome.title_color = '#000000'
+        popHome.background='#FFFFFF'
         popHome.open()
 
     def screen_transition(self, *args):
@@ -329,7 +398,6 @@ class Application(App):
         sm = ScreenManagement()
         sm.add_widget(HomeScreen(name='homescreen'))
         sm.add_widget(Form(name='form'))
-        # sm.add_widget(SubmitPopup(name='popup'))
         return sm
 
 
