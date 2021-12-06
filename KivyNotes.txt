@@ -1,6 +1,0 @@
-Float
-Relative
-Grid
-Anchor
-Box
-Stack
