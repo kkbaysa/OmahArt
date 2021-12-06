@@ -1,3 +1,5 @@
+"""This file defines the Biography class used in main.py"""
+
 class Biography:
     def __init__(self, firstNameIn, lastNameIn, companyNameIn, emailIn, websiteNameIn, socialMediaIn, phoneNumIn, productCategoryIn, bioIn):
         self.firstName = firstNameIn
