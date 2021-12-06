@@ -16,11 +16,13 @@ from biographies import Biography
 from kivy.uix.actionbar import ActionView,ActionOverflow,ActionBar,ActionButton,ActionPrevious
 import csv
 
-
 class ScreenManagement(ScreenManager):
     def __init__(self, **kwargs):
         super(ScreenManagement, self).__init__(**kwargs)
 
+'''
+   Form of application. This will allow companies to register their company to be displayed on the website. 
+'''
 
 class Form(Screen):  # create screen
     def __init__(self, **kwargs):
@@ -210,7 +212,7 @@ class Form(Screen):  # create screen
                               size_hint=(.25, 0.25),
                               bold=True,
                               background_color='#100000')
-        self.button2.bind(on_press=self.callback2)
+        self.button2.bind(on_press=self.submit)
 
         ## Add buttons to a row
         self.buttonSpace.add_widget(self.button1)
@@ -219,40 +221,48 @@ class Form(Screen):  # create screen
         ## Add Button Space to Window
         self.window.add_widget(self.buttonSpace)
 
+        ## Add window to self to render
         self.add_widget(self.window)
 
+    # return to homescreen without save
     def backtohome(self, instance):
         self.manager.current = 'homescreen'
 
-    def callback1(self, pop, instance):
+    # return to homescreen after save
+    def backtohomeaftersave(self, pop, instance):
         pop.dismiss()
         self.manager.current = 'homescreen'
 
+    # return to form if not completed
     def continueForm(self, pop, instance):
         pop.dismiss()
         self.manager.current = 'form'
 
-    def callback2(self, instance):
+    # Submission of form
+    # if form is complete with minimum info, save
+    # else prompt user to complete the form
+    def submit(self, instance):
         if (self.firstName.text != '') and self.lastName.text != '' and self.companyName.text != '' and self.companyCategory.text != '':
             pop = Popup(title='Submission Received', size_hint=(None, None), size=(1100,800))
             self.contents = GridLayout()
             self.contents.cols = 1
             self.message = Label(text="Submitted. We will get back to you shortly, " + self.firstName.text + "!")
+            with open("companyBios.csv", "at") as csvOut:
+                entry = [self.firstName.text, self.lastName.text, self.companyName.text,
+                         self.companyEmail.text, self.companyWebsite.text, self.companySocialMedia.text,
+                         self.companyPhoneNumber.text, self.companyCategory.text, self.companyBio.text]
+                csvWriter = csv.writer(csvOut)
+                csvWriter.writerow(entry)
+                csvOut.close()
             self.returnButton = Button(text='Return to Home Page')
-            self.returnButton.bind(on_press=partial(self.callback1, pop))
+            self.returnButton.bind(on_press=partial(self.backtohomeaftersave, pop))
             self.contents.add_widget(self.message)
             self.contents.add_widget(self.returnButton)
 
             pop.content = self.contents
             pop.open()
 
-            with open("companyBios.csv", "at") as csvOut:
-                    entry = [self.firstName.text, self.lastName.text, self.companyName.text,
-                             self.companyEmail.text, self.companyWebsite.text, self.companySocialMedia.text,
-                             self.companyPhoneNumber.text, self.companyCategory.text, self.companyBio.text]
-                    csvWriter = csv.writer(csvOut)
-                    csvWriter.writerow(entry)
-                    csvOut.close()
+
         else:
             pop = Popup(title='Invalid Submission', size_hint=(None, None), size=(1100, 800))
             self.contents = GridLayout()
@@ -266,6 +276,7 @@ class Form(Screen):  # create screen
             pop.content = self.contents
             pop.open()
 
+
 '''
     Home screen of application. This will hold all of the company business cards that users can interact with. 
 '''
@@ -274,12 +285,12 @@ class HomeScreen(Screen):  # create app class
     def __init__(self, **kwargs):
         bios = []
 
+        # Loop through the csv with companies and store
         with open('companyBios.csv', newline='') as csvfile:
             companyBios = csv.reader(csvfile, delimiter=',')
             for row in companyBios:
                 bios.append(Biography(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]))
-
-
+        biosLength = len(bios)
         super(HomeScreen, self).__init__(**kwargs)
         Window.clearcolor = (1, 1, 1, 1)
         Window.size = (1000, 1000)
@@ -289,13 +300,9 @@ class HomeScreen(Screen):  # create app class
         self.window.size_hint = (.8, 1)
         self.window.pos_hint = {"center_x": 0.5, "center_y": .6}
 
-        ## Heading to the application
+    ## Heading to the application
         self.headingTile = BoxLayout(orientation='horizontal')
         self.headingTile.size_hint_y = .25
-        # self.headingTile = GridLayout()
-        # self.headingTile.cols = 1
-        # self.headingTile.size = (1,1)
-
         self.actionBar = ActionBar(
                         pos=(0,0),
                         width=Window.width,
@@ -310,11 +317,7 @@ class HomeScreen(Screen):  # create app class
         self.headingTile.add_widget(self.actionBar)
         self.window.add_widget(self.headingTile)
 
-        # self.headerText = BoxLayout(orientation='horizontal')
-        # self.welcome = Label(text="Welcome to the OmahART website. Explore different local Omaha artists by clicking on each card.", color='#000000')
-        # self.headerText.add_widget(self.welcome)
-        # self.window.add_widget(self.headerText)
-
+    ## Menu Buttons
         self.header = BoxLayout(orientation='horizontal')
         self.header.size_hint_y = .05
         self.homeButton = Button(text="Home Page",
@@ -327,44 +330,27 @@ class HomeScreen(Screen):  # create app class
                                  on_press=partial(self.screen_transition))
         self.header.add_widget(self.homeButton)
         self.header.add_widget(self.formButtom)
-
         self.window.add_widget(self.header)
 
+    ## Spacer between menu and cards
         self.space1 = GridLayout()
         self.space1.cols = 1
         self.space1.size_hint_y = .025
         self.window.add_widget(self.space1)
 
-        # self.cardScroller = ScrollView()
         self.cards = GridLayout(cols=2, row_force_default=True, row_default_height=150, size_hint_y = .5)
 
         for company in bios:
             self.companyHeader1 = Label(text=company.companyName)
-            # # self.companyHeader1.font_size = 60
-            # self.companyHeader1.halign = 'center'
             self.companyHeader2 = Label(text=company.productCategory)
-            # self.companyHeader2.font_size = 30
-            # self.companyHeader2.halign = 'center'
             self.card1 = Button(text=self.companyHeader1.text + "\n" + self.companyHeader2.text,
-                                size=(100, 50),
-                                # height=15,
-                                # width=self.cards.width/2,
-
                                 bold=True,
                                 background_color='#99FFFF')
-            # self.card1.size_hint = (.75, .25)
             self.card1.halign='center'
             self.card1.bind(on_press=partial(self.openBusinessCard, company))
             self.cards.add_widget(self.card1)
 
-        # self.cardScroller.add_widget(self.cards)
-        # self.space2 = GridLayout()
-        # self.space2.cols = 1
-        # self.space2.size_hint_y = .3
-        # self.window.add_widget(self.space2)
-
         self.window.add_widget(self.cards)
-
         self.add_widget(self.window)
 
     def openBusinessCard(self, company, instance):
